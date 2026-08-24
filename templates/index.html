@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="API Pulse - Premium API Health & Performance Monitor. Monitor, measure, and respond to API availability.">
+    <title>API Pulse — Monitor. Measure. Respond.</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS File -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Subtle Ambient Glow Effects -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    
+    <!-- Custom Cursor Glow -->
+    <div class="cursor-glow" id="cursor-glow"></div>
+
+    <header class="header">
+        <div class="header-container">
+            <div class="brand">
+                <span class="pulse-indicator pulse-active"></span>
+                <span class="logo-text">API PULSE</span>
+            </div>
+            <nav class="nav">
+                <span class="nav-tagline">"Monitor. Measure. Respond."</span>
+            </nav>
+            <div class="header-actions">
+                <a href="#monitor-section" class="btn btn-secondary btn-sm">Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content reveal">
+                <div class="hero-tagline-badge reveal">VERSION 1.0 // MVP</div>
+                <h1 class="hero-title reveal">Monitor API health, performance, and availability from one intelligent dashboard.</h1>
+                <p class="hero-subtitle reveal">Elevate your integration reliability with elegant real-time status diagnostics, latency history tracking, and uptime metrics.</p>
+                <div class="hero-cta-wrapper reveal">
+                    <a href="#monitor-section" class="btn btn-primary">Check an API</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Monitor Form Section -->
+        <section id="monitor-section" class="monitor-section reveal">
+            <div class="section-header">
+                <span class="section-num">01 /</span>
+                <h2 class="section-title">API Diagnostic</h2>
+            </div>
+            
+            <div class="monitor-card">
+                <!-- Tabs to switch between Single and Multiple checks -->
+                <div class="tab-container">
+                    <button class="tab-btn active" onclick="switchTab('single')">Single Endpoint</button>
+                    <button class="tab-btn" onclick="switchTab('multiple')">Batch / Multi-check</button>
+                </div>
+
+                <!-- Single Endpoint Form -->
+                <div id="single-form-panel" class="form-panel active">
+                    <div class="input-group">
+                        <label for="endpoint-url" class="input-label">API ENDPOINT URL</label>
+                        <div class="input-with-button">
+                            <span class="input-prefix-icon">HTTP</span>
+                            <input type="text" id="endpoint-url" class="form-input" placeholder="https://api.example.com/v1/status" autocomplete="off">
+                            <button class="btn btn-primary check-btn" id="single-check-btn" onclick="checkSingleApi()">
+                                <span>CHECK API</span>
+                                <div class="loader-inline" id="single-loader"></div>
+                            </button>
+                        </div>
+                        <div class="input-hint">Specify full address starting with <code>http://</code> or <code>https://</code>.</div>
+                        <div class="validation-message error" id="single-validation-error"></div>
+                    </div>
+                </div>
+
+                <!-- Multiple Endpoints Form -->
+                <div id="multiple-form-panel" class="form-panel">
+                    <div class="input-group">
+                        <label for="endpoints-textarea" class="input-label">MULTIPLE API ENDPOINTS (ONE PER LINE)</label>
+                        <textarea id="endpoints-textarea" class="form-textarea" placeholder="https://api.example.com/v1/users&#10;https://api.example.com/v1/posts&#10;https://api.example.com/v1/auth" rows="4"></textarea>
+                        <div class="textarea-actions">
+                            <div class="input-hint">Enter each URL on a new line. Support up to 10 URLs concurrently.</div>
+                            <button class="btn btn-primary check-btn" id="multiple-check-btn" onclick="checkMultipleApis()">
+                                <span>RUN BATCH MONITOR</span>
+                                <div class="loader-inline" id="multiple-loader"></div>
+                            </button>
+                        </div>
+                        <div class="validation-message error" id="multiple-validation-error"></div>
+                    </div>
+                </div>
+
+                <!-- Threshold settings -->
+                <div class="advanced-settings">
+                    <div class="setting-item">
+                        <label for="threshold-input" class="setting-label">Response Time Threshold (SLOW threshold in ms):</label>
+                        <input type="number" id="threshold-input" class="setting-input" value="1000" min="50" max="10000">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Analytics Section -->
+        <section class="dashboard-section reveal" id="dashboard-section">
+            <div class="section-header">
+                <span class="section-num">02 /</span>
+                <h2 class="section-title">Performance Overview</h2>
+                <button class="btn btn-secondary btn-sm clear-btn" onclick="clearAllHistory()">Reset History</button>
+            </div>
+
+            <!-- Grid 1: Metric Cards (Editorial-style large stats) -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-val" id="metric-uptime">0.0%</div>
+                    <div class="metric-label">UPTIME PERCENTAGE</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="metric-latency">0ms</div>
+                    <div class="metric-label">AVG RESPONSE TIME</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="metric-total">0</div>
+                    <div class="metric-label">TOTAL CHECKS</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val" id="metric-score">0%</div>
+                    <div class="metric-label">HEALTH SCORE</div>
+                </div>
+            </div>
+
+            <!-- Grid 2: Chart & Managed Endpoints Status -->
+            <div class="analytics-grid">
+                <!-- Response Time Chart -->
+                <div class="chart-container-card">
+                    <div class="card-header">
+                        <h3 class="card-title">RESPONSE TIME PROFILE (ms)</h3>
+                        <span class="card-subtitle">Recent performance changes</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- List of monitored APIs -->
+                <div class="endpoints-status-card">
+                    <div class="card-header">
+                        <h3 class="card-title">MONITORED ENDPOINTS</h3>
+                        <span class="card-subtitle">Active targets checked</span>
+                    </div>
+                        <div class="endpoints-list" id="endpoints-list" data-reveal>
+                            <div class="empty-state">No endpoints checked yet. Start by typing a URL above.</div>
+                        </div>
+                </div>
+            </div>
+
+            <!-- Grid 3: Historical logs and Inspector -->
+            <div class="logs-grid">
+                <!-- Logs Table -->
+                <div class="logs-card">
+                    <div class="card-header">
+                        <h3 class="card-title">DIAGNOSTIC LOGS HISTORY</h3>
+                        <span class="card-subtitle">Detailed check logs</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="logs-table">
+                            <thead>
+                                <tr>
+                                    <th>TIMESTAMP</th>
+                                    <th>STATUS</th>
+                                    <th>CODE</th>
+                                    <th>URL</th>
+                                    <th>RESPONSE TIME</th>
+                                    <th>SIZE</th>
+                                    <th class="actions-header">INSPECT</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <tr>
+                                    <td colspan="7" class="empty-table">No historical logs.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Inspector panel -->
+                <div class="inspector-card" id="inspector-card">
+                    <div class="card-header">
+                        <h3 class="card-title">RESPONSE PREVIEW</h3>
+                        <span class="card-subtitle" id="inspector-subtitle">Select a log check to inspect payload</span>
+                    </div>
+                    <div class="inspector-content">
+                        <div class="inspector-metadata" id="inspector-metadata">
+                            <!-- Populated on click -->
+                            <div class="meta-item-placeholder">Click the "Inspect" icon on any log history item to load HTTP details.</div>
+                        </div>
+                        <div class="inspector-body-wrapper" id="inspector-body-wrapper" style="display: none;">
+                            <div class="inspector-body-header">
+                                <span>RESPONSE BODY PREVIEW</span>
+                                <span class="mime-badge" id="inspector-mime">JSON</span>
+                            </div>
+                            <pre class="inspector-json" id="inspector-json-pre"><code>{}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">&copy; 2026 API Pulse. Minimal, Editorial, Sophisticated Monitoring.</p>
+            <p class="footer-status"><span class="dot dot-up"></span> System Live</p>
+        </div>
+    </footer>
+
+    <!-- JS script file -->
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
